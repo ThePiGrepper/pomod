@@ -39,7 +39,7 @@ struct timespec remaining;
 pomo_state curr_state = POMO;
 unsigned int pomo_count = 0;
 
-static volatile sig_atomic_t running;
+static volatile sig_atomic_t running, sigReceived;
 
 /* functions implementations */
 void die(const char *errstr, ...)
@@ -72,7 +72,10 @@ void cleanup(void)
   unlink(pomodlock);
 }
 
-void cmdinforeply_handler(int sig){};
+void cmdinforeply_handler(int sig)
+{
+  sigReceived = 1;
+}
 
 void cmdkill_handler(int sig)
 {
@@ -151,8 +154,8 @@ void talk2daemon(int cmd)
         exit(EXIT_FAILURE);
       sigemptyset(&mask);
       kill(srv_pid, SIGPWR);
-      sleep(1); //workaround
-      //sigsuspend(&mask); //TODO: sometimes hangs(overwritten pending signal on server). add a timeout
+      if(!sigReceived)
+        sleep(1);
       //read pomod.out file
       char outbuf[OUT_STR_LEN + 1];
       int out_fd;
