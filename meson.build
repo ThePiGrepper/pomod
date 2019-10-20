@@ -1,4 +1,5 @@
-project('pomod',
+project(
+  'pomod',
   'c',
   version: '0.1',
   license: 'MIT',
@@ -7,6 +8,8 @@ project('pomod',
     'warning_level=2',
     ],
 )
+
+add_project_arguments('-Wno-unused-parameter', language: 'c')
 
 libnotify = dependency('libnotify')
 
@@ -22,6 +25,7 @@ executable(
   dependencies: [
     libnotify,
     ],
+  install: true,
 )
 
 scdoc = find_program('scdoc', required: get_option('man-pages'))
