@@ -26,9 +26,9 @@ typedef struct {
 
 static Timers timers[] = {
   /* timer(s)  comment */
-  {     1500,  "Time to start working!"},
-  {      300,  "Time to start resting!"},
-  {     1000,  "Time to take some nap!"},
+  {     1500,  "Start working!"},
+  {      300,  "Take 5 min!"},
+  {     1000,  "You deserve a break, take 20!"},
 };
 
 const char pomodlock[] = "/tmp/pomod.lock";
