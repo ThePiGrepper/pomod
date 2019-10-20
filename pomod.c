@@ -20,7 +20,7 @@
 typedef enum {POMO, LBRK, BBRK} pomo_state;
 
 typedef struct {
-  unsigned int tmr;
+  long int tmr;
   char *cmt;
 } Timers;
 
@@ -244,6 +244,8 @@ int main(int argc, char *argv[])
     sigemptyset(&haltmask);
     while(1)
     {
+      if(remaining.tv_sec == timers[curr_state].tmr)
+          notify_send(timers[curr_state].cmt);
       if(running) {
         if(nanosleep(&remaining, &remaining) == 0) {
           remaining.tv_nsec = 0;
@@ -259,7 +261,6 @@ int main(int argc, char *argv[])
               break;
           }
           remaining.tv_sec = timers[curr_state].tmr;
-          notify_send(timers[curr_state].cmt);
         }
       } else {
         sigsuspend(&haltmask);
