@@ -4,7 +4,7 @@ project(
   version: '0.1',
   license: 'MIT',
   default_options: [
-    'c_std=c11',
+    'c_std=gnu11',
     'warning_level=2',
     ],
 )
