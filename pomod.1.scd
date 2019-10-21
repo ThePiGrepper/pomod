@@ -6,7 +6,7 @@ pomod - pomodoro daemon
 
 # SYNOPSIS
 
-*pomod* [COMMANDS]
+*pomod* <options...> [COMMANDS]
 
 # DESCRIPTION
 
@@ -15,7 +15,17 @@ As it's name implies, pomod is implemented as a daemon, that means that the serv
 the background, waiting for a request, usually sent by the client-side process. This design decision
 makes easier to show session information in status bars and other notification methods.
 
+# OPTIONS
+
+*-a* _cmd_
+	Execute _cmd_ when a phase ends. Its intended use is sound playback. Recommended/tested commands are:
+	*aplay*, *play* (If another command works fine, please report). Any filepath argument in _cmd_ *must* be absolute.
+
+*-h*
+	Show help message and quit.
+
 # COMMANDS
+
 *start*
 	If used for the first time, start the server, as well as the first pomodoro cycle.
 	In any other situation, restart clock, if halted.
@@ -28,7 +38,8 @@ makes easier to show session information in status bars and other notification m
 	Kill the pomodoro daemon. Internally, send *SIGINT* signal to the daemon.
 
 # FORMAT
-Data returned by _info_ is structured with a semicolon-separated, numerical format, as follows:
+
+Data returned by _info_ is structured with a semicolon-separated, numerical format, as follows:++
 "<phase>;<clock_state>;<pomodoro_count>;<remaining_time>"
 
 Where:
@@ -41,5 +52,6 @@ Where:
 	*remaining_time* shows the amount of seconds to finish the current phase.
 
 # AUTHOR
+
 Maintained by Erick Cafferata <erick@cafferata.me>. For information about pomod development,
 see https://gitlab.com/erickcc/pomod.
