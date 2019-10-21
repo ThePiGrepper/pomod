@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #define PID_STR_LEN 7 //max value:2^22
 #define OUT_STR_LEN 20
@@ -63,6 +64,30 @@ void notify_send(char *cmt)
   notify_notification_show(n, NULL);
   g_object_unref(G_OBJECT(n));
   notify_uninit();
+}
+
+char *extcmd;
+char *extarg;
+char is_extcmd = 0;
+
+//TODO: avoid using global, send extcmd, extarg as parameters.
+void spawn(void)
+{
+  pid_t childid = fork();
+  if (childid == 0) {
+    if(fork() == 0) {
+      setsid();
+      if(extarg == NULL)
+        execlp(extcmd, extcmd, NULL);
+      else
+        execlp(extcmd, extcmd, extarg, NULL);
+      _exit(EXIT_FAILURE); //unreachable
+    } else {
+      _exit(EXIT_SUCCESS);
+    }
+  } else {
+    waitpid(childid, NULL, 0);
+  }
 }
 
 void cleanup(void)
@@ -173,16 +198,33 @@ void talk2daemon(int cmd)
 
 int main(int argc, char *argv[])
 {
-  int lock_fd;
+  int lock_fd, pid_len, cmd, opt;
   char buf[PID_STR_LEN + 1];
-  int pid_len, cmd;
 
-  if(argc == 1) usage();
-  if(strcmp(argv[1], "start") == 0) cmd = CMD_STRT;
-  else if(strcmp(argv[1], "halt") == 0) cmd = CMD_HALT;
-  else if(strcmp(argv[1], "info") == 0) cmd = CMD_INFO;
-  else if(strcmp(argv[1], "kill") == 0) cmd = CMD_KILL;
-  else usage();
+  while ((opt = getopt(argc, argv, ":a:h")) != -1) {
+    switch (opt) {
+      case 'a':
+        extcmd = (char *) malloc(strlen(optarg) + 1);
+        strcpy(extcmd, optarg);
+        is_extcmd = 1;
+        break;
+      case 'h': usage(); break;
+      case ':': die("Missing argument for -%c\n", optopt); break;
+      case '?': die("Unrecognized option: -%c\n", optopt); break;
+      default:  die("Unexpected case in switch()\n");
+    }
+  }
+
+  //cmd is the FIRST non-option argument. any other gets ignored.
+  if(optind < argc){
+    if(strcmp(argv[optind], "start") == 0) cmd = CMD_STRT;
+    else if(strcmp(argv[optind], "halt") == 0) cmd = CMD_HALT;
+    else if(strcmp(argv[optind], "info") == 0) cmd = CMD_INFO;
+    else if(strcmp(argv[optind], "kill") == 0) cmd = CMD_KILL;
+    else usage();
+  } else {
+    usage();
+  }
   //is server alive?
   lock_fd = open(pomodlock, O_CREAT | O_EXCL | O_WRONLY, 0644);
   if(lock_fd == -1) {
@@ -195,6 +237,13 @@ int main(int argc, char *argv[])
     if(cmd != CMD_STRT) {
       cleanup();
       die("no daemon available. use 'start'\n");
+    }
+
+    if(is_extcmd)
+    {
+      extarg = strchr(extcmd, ' ');
+      if(extarg) *extarg++ = '\0';
+      //TODO: test if first word is a PATH findable command.
     }
 
     daemonize();
@@ -261,6 +310,7 @@ int main(int argc, char *argv[])
               break;
           }
           remaining.tv_sec = timers[curr_state].tmr;
+          if(is_extcmd) spawn();
         }
       } else {
         sigsuspend(&haltmask);
