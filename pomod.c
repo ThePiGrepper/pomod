@@ -66,21 +66,13 @@ void notify_send(char *cmt)
   notify_uninit();
 }
 
-char *extcmd;
-char *extarg;
-char is_extcmd = 0;
-
-//TODO: avoid using global, send extcmd, extarg as parameters.
-void spawn(void)
+void spawn(char *cmd)
 {
   pid_t childid = fork();
   if (childid == 0) {
     if(fork() == 0) {
       setsid();
-      if(extarg == NULL)
-        execlp(extcmd, extcmd, NULL);
-      else
-        execlp(extcmd, extcmd, extarg, NULL);
+      execlp("sh", "sh", "-c", cmd, NULL);
       _exit(EXIT_FAILURE); //unreachable
     } else {
       _exit(EXIT_SUCCESS);
@@ -200,6 +192,8 @@ int main(int argc, char *argv[])
 {
   int lock_fd, pid_len, cmd, opt;
   char buf[PID_STR_LEN + 1];
+  char *extcmd;
+  char is_extcmd = 0;
 
   while ((opt = getopt(argc, argv, ":a:h")) != -1) {
     switch (opt) {
@@ -237,13 +231,6 @@ int main(int argc, char *argv[])
     if(cmd != CMD_STRT) {
       cleanup();
       die("no daemon available. use 'start'\n");
-    }
-
-    if(is_extcmd)
-    {
-      extarg = strchr(extcmd, ' ');
-      if(extarg) *extarg++ = '\0';
-      //TODO: test if first word is a PATH findable command.
     }
 
     daemonize();
@@ -310,7 +297,7 @@ int main(int argc, char *argv[])
               break;
           }
           remaining.tv_sec = timers[curr_state].tmr;
-          if(is_extcmd) spawn();
+          if(is_extcmd) spawn(extcmd);
         }
       } else {
         sigsuspend(&haltmask);

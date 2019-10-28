@@ -18,8 +18,13 @@ makes easier to show session information in status bars and other notification m
 # OPTIONS
 
 *-a* _cmd_
-	Execute _cmd_ when a phase ends. Its intended use is sound playback. Recommended/tested commands are:
-	*aplay*, *play* (If another command works fine, please report). Any filepath argument in _cmd_ *must* be absolute.
+	Execute _cmd_ when a phase ends. Its intended use is sound playback.++
+Recommended/tested commands are:++
+ *aplay*++
+ *play*++
+ *ffplay* (use -nodisp -autoexit -loglevel quiet)++
+ *mpv* (use --no-video)++
+\* Any filepath argument in _cmd_ *must* be absolute.
 
 *-h*
 	Show help message and quit.
