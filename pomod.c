@@ -29,7 +29,7 @@ static Timers timers[] = {
   /* timer(s)  comment */
   {     1500,  "Start working!"},
   {      300,  "Take 5 min!"},
-  {     1000,  "You deserve a break, take 20!"},
+  {     1200,  "You deserve a break, take 20!"},
 };
 
 const char pomodlock[] = "/tmp/pomod.lock";
