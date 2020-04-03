@@ -1,0 +1,38 @@
+#!/bin/sh
+
+pomod_status() {
+  raw="$(pomod info 2>/dev/null)"
+  if test $? -eq 0; then
+    trem=$(echo "$raw" | cut -d";" -f4)
+    trem="$((trem/60)):$((trem%60))"
+    #get phase
+    case $(echo "$raw" | cut -d";" -f1) in
+      0)
+        phase="P"
+        ;;
+      1)
+        phase="b"
+        ;;
+      2)
+        phase="B"
+        ;;
+    esac
+    #get clock state
+    case $(echo "$raw" | cut -d";" -f2) in
+      0)
+        stat="\U023F9" #STOP
+        ;;
+      1)
+        stat="\U023F5" #PLAY
+        ;;
+    esac
+    count="$(echo "$raw" | cut -d";" -f3)" #pomodoro count
+    echo -e "${stat} ${trem}${phase}"
+    return 0
+  else
+    echo "Pomod is not running" >&2
+    return 1
+  fi
+}
+
+pomod_status
